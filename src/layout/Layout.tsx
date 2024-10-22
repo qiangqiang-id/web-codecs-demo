@@ -35,7 +35,6 @@ function LayoutComponent() {
   return (
     <Layout style={{ height: '100%' }}>
       <Sider className={Style.sider}>
-        <div className="demo-logo-vertical" />
         <Menu
           onSelect={(val) => {
             setDefaultSelectedKeys(val.key)
