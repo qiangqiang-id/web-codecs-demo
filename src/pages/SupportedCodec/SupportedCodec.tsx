@@ -16,11 +16,7 @@ const ACCELERATIONS: HardwareAcceleration[] = [
   'prefer-software',
 ]
 
-type Config = Pick<
-  VideoDecoderConfig,
-  'codec' | 'hardwareAcceleration' | 'codedWidth' | 'codedHeight'
-> &
-  Pick<VideoEncoderConfig, 'width' | 'height'>
+type Config = VideoDecoderConfig | VideoEncoderConfig
 
 export default function SupportedCodec() {
   const [decodes, setDecodes] = useState<
@@ -55,6 +51,7 @@ export default function SupportedCodec() {
             ...config,
             width: width,
             height: height,
+            framerate: 30,
           }
         }
 
@@ -68,7 +65,7 @@ export default function SupportedCodec() {
    * 获取解码格式
    *  */
   const getDecodeCodec = async () => {
-    const configs: VideoDecoderConfig[] = getConfigs('decode')
+    const configs = getConfigs('decode')
     const infoList = await Promise.all(
       configs.map(async (config, index) => {
         const data = await VideoDecoder.isConfigSupported(config)
@@ -82,7 +79,7 @@ export default function SupportedCodec() {
    * 获取编码格式
    *  */
   const getEncodeCodec = async () => {
-    const configs: VideoEncoderConfig[] = getConfigs('encode')
+    const configs = getConfigs('encode') as VideoEncoderConfig[]
 
     const infoList = await Promise.all(
       configs.map(async (config, index) => {
@@ -183,6 +180,10 @@ export default function SupportedCodec() {
       },
     },
 
+    {
+      title: '帧率',
+      dataIndex: ['config', 'framerate'],
+    },
     {
       title: '宽',
       dataIndex: ['config', 'width'],
