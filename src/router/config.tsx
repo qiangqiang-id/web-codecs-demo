@@ -4,6 +4,7 @@ import Layout from '@/layout'
 import SupportedCodec from '@/pages/SupportedCodec'
 import CanvasExportVideo from '@/pages/CanvasExportVideo'
 import FFmpegTransform from '@/pages/FFmpegTransform'
+import GifToVideo from '@/pages/GifToVideo'
 
 const routerData = [
   {
@@ -23,6 +24,11 @@ const routerData = [
       {
         ...Routes.FFmpegTransform,
         element: <FFmpegTransform />,
+      },
+
+      {
+        ...Routes.GifToVideo,
+        element: <GifToVideo />,
       },
     ],
   },

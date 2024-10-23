@@ -7,7 +7,7 @@ export default function FFmpegTransform() {
   const fileRef = useRef<File>()
   const [videoUrl, setVideoUrl] = useState('')
   const [newVideoUrl, setNewVideoUrl] = useState('')
-  const handleChange = async (files: File[]) => {
+  const handleChange = (files: File[]) => {
     const file = files[0]
     if (!file) return
 

@@ -1,16 +1,4 @@
 const Routes = {
-  // /** ffmpeg操作视频 */
-  // FFmpegExample: {
-  //   key: 'ffmpegExample',
-  //   path: '/ffmpeg-example',
-  //   label: 'ffmpeg操作视频',
-  // },
-  // /** WebCodecs demo */
-  // WebCodecs: {
-  //   key: 'webCodecs',
-  //   path: '/web-codecs',
-  //   label: 'webCodecs',
-  // },
   SupportedCodec: {
     key: 'SupportedCodec',
     path: '/supported-codec',
@@ -27,6 +15,12 @@ const Routes = {
     key: 'FFmpegTransform',
     path: '/ffmpeg-transform',
     label: 'ffmpeg转码',
+  },
+
+  GifToVideo: {
+    key: 'GifToVideo',
+    path: '/gif-to-video',
+    label: '动图转视频',
   },
 } as const
 

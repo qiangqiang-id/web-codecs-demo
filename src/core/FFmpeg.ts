@@ -1,4 +1,4 @@
-import { CustomTransformVideoOptions, VideoFrameOptions } from '@/types/ffmpeg'
+import { CustomTransformVideoOptions, VideoFrameOptions } from '@/types/Fmpeg'
 import fileToBase64Url from '@/utils/fileToBase64Url'
 import { randomString } from '@/utils/random'
 import { FFmpeg as FFmpegWasm } from '@ffmpeg/ffmpeg'
