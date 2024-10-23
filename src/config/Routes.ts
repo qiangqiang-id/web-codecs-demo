@@ -16,6 +16,18 @@ const Routes = {
     path: '/supported-codec',
     label: '兼容性检测',
   },
+
+  CanvasExportVideo: {
+    key: 'CanvasExportVideo',
+    path: '/canvas-export-video',
+    label: 'canvas导出视频',
+  },
+
+  FFmpegTransform: {
+    key: 'FFmpegTransform',
+    path: '/ffmpeg-transform',
+    label: 'ffmpeg转码',
+  },
 } as const
 
 export default Routes

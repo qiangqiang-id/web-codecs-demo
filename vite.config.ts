@@ -12,7 +12,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     open: true,
-    port: 8888,
+    port: 8887,
     host: '0.0.0.0',
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
+  },
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
   },
 })
