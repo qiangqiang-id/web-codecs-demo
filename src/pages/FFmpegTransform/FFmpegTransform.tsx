@@ -10,9 +10,7 @@ export default function FFmpegTransform() {
   const handleChange = (files: File[]) => {
     const file = files[0]
     if (!file) return
-
     fileRef.current = file
-
     setVideoUrl(URL.createObjectURL(file))
   }
 
@@ -43,6 +41,8 @@ export default function FFmpegTransform() {
       <video src={videoUrl} controls />
 
       <video src={newVideoUrl} controls />
+
+      {/* <img src="https://img.shanjian.tv/common/material/2024/08/26/17/332x331/80ffd3509750fd2e9c1f0dc0890058bb.jpg" /> */}
     </div>
   )
 }

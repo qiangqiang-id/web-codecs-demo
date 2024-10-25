@@ -52,7 +52,12 @@
     "strictFunctionTypes": true,
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
-    "types": ["@types/node", "vite/client", "@types/dom-webcodecs"]
+    "types": [
+      "@types/node",
+      "vite/client",
+      "@types/dom-webcodecs",
+      "@types/dom-mediacapture-transform"
+    ]
   },
   "include": [
     "src",

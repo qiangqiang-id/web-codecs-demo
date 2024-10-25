@@ -48,10 +48,10 @@ export default function GifToVideo() {
       type: fileTypeRef.current,
       data: stream,
     }
+
     const imageDecoder = new ImageDecoder(info)
     await Promise.all([imageDecoder.completed, imageDecoder.tracks.ready])
     let frameCnt = imageDecoder.tracks.selectedTrack?.frameCount ?? 1
-
     const frames: VideoFrame[] = []
     for (let i = 0; i < frameCnt; i += 1) {
       frames.push((await imageDecoder.decode({ frameIndex: i })).image)
