@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Button } from 'antd'
 import Upload from '@/components/Upload'
 import FFmpeg from '@/core/FFmpeg'
+import Style from './FFmpegTransform.module.less'
 
 export default function FFmpegTransform() {
   const fileRef = useRef<File>()
@@ -32,17 +33,25 @@ export default function FFmpegTransform() {
 
   return (
     <div>
-      <Upload onChange={handleChange} accept={['video/*']}>
-        <Button>获取视频</Button>
-      </Upload>
+      <div>
+        <Upload onChange={handleChange} accept={['video/*']}>
+          <Button>获取视频</Button>
+        </Upload>
 
-      <Button onClick={handleTransform}>ffmpeg转换</Button>
+        <Button style={{ marginLeft: 20 }} onClick={handleTransform}>
+          ffmpeg转换
+        </Button>
+      </div>
 
-      <video src={videoUrl} controls />
+      <div style={{ marginTop: 20 }}>
+        <div className={Style['video-item']}>
+          {videoUrl && <video src={videoUrl} controls />}
+        </div>
 
-      <video src={newVideoUrl} controls />
-
-      {/* <img src="https://img.shanjian.tv/common/material/2024/08/26/17/332x331/80ffd3509750fd2e9c1f0dc0890058bb.jpg" /> */}
+        <div className={Style['video-item']}>
+          {newVideoUrl && <video src={newVideoUrl} controls />}
+        </div>
+      </div>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import {
 import Upload from '@/components/Upload'
 import { useRef, useState } from 'react'
 import { makeImage } from '@/utils/Image'
+import Style from './GifToVideo.module.less'
 
 const fetchImageByteStream = async (url: string) => {
   const response = await fetch(url)
@@ -105,14 +106,24 @@ export default function GifToVideo() {
 
   return (
     <div>
-      <Upload onChange={handleChange} accept={['image/gif', 'image/webp']}>
-        <Button>获取动图</Button>
-      </Upload>
+      <div>
+        <Upload onChange={handleChange} accept={['image/gif', 'image/webp']}>
+          <Button>获取动图</Button>
+        </Upload>
+        <Button style={{ marginLeft: 20 }} onClick={handleTransform}>
+          转成视频
+        </Button>
+      </div>
 
-      <Button onClick={handleTransform}>转成视频</Button>
+      <div className={Style.container}>
+        <div className={Style.content}>
+          <img src={imageUrl} />
+        </div>
 
-      <img src={imageUrl} />
-      <video src={videUrl} controls autoPlay loop />
+        <div className={Style.content}>
+          {videUrl && <video src={videUrl} controls autoPlay loop />}
+        </div>
+      </div>
     </div>
   )
 }

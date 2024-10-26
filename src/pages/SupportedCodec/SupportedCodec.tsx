@@ -28,6 +28,7 @@ export default function SupportedCodec() {
 
   const [width, setWidth] = useState(720)
   const [height, setHeight] = useState(1280)
+  const [framerate, setFramerate] = useState(30)
 
   const getConfigs = (type: 'decode' | 'encode') => {
     const configs: Config[] = []
@@ -43,6 +44,7 @@ export default function SupportedCodec() {
             ...config,
             codedWidth: width,
             codedHeight: height,
+            framerate: framerate,
           }
         }
 
@@ -51,7 +53,7 @@ export default function SupportedCodec() {
             ...config,
             width: width,
             height: height,
-            framerate: 30,
+            framerate: framerate,
           }
         }
 
@@ -101,10 +103,16 @@ export default function SupportedCodec() {
     }
   }
 
+  const changeFramerate = (val: number | null) => {
+    if (val !== null) {
+      setFramerate(val)
+    }
+  }
+
   useEffect(() => {
     getDecodeCodec()
     getEncodeCodec()
-  }, [width, height])
+  }, [width, height, framerate])
 
   const decodesColumns: ColumnsType<VideoDecoderSupport & { key: string }> = [
     {
@@ -197,21 +205,25 @@ export default function SupportedCodec() {
   return (
     <>
       <div className={Style['size-box']}>
-        <InputNumber addonBefore="宽" value={width} onChange={changeWidth} />
-        *
-        <InputNumber addonBefore="高" value={height} onChange={changeHeight} />
+        <div className={Style['form-item']}>
+          分辨率：
+          <InputNumber addonBefore="宽" value={width} onChange={changeWidth} />
+          *
+          <InputNumber
+            addonBefore="高"
+            value={height}
+            onChange={changeHeight}
+          />
+        </div>
+
+        <div className={Style['form-item']}>
+          帧率: <InputNumber value={framerate} onChange={changeFramerate} />
+        </div>
       </div>
 
       <div className={Style.container}>
         <div className={Style.box}>
-          <Button
-            onClick={getDecodeCodec}
-            type="primary"
-            style={{ marginBottom: 16 }}
-          >
-            获取解码格式
-          </Button>
-
+          <h1>解码</h1>
           <Table
             dataSource={decodes}
             columns={decodesColumns}
@@ -219,13 +231,7 @@ export default function SupportedCodec() {
           />
         </div>
         <div className={Style.box}>
-          <Button
-            onClick={getEncodeCodec}
-            type="primary"
-            style={{ marginBottom: 16 }}
-          >
-            获取编码格式
-          </Button>
+          <h1>编码</h1>
           <Table
             dataSource={encodes}
             columns={encodesColumns}

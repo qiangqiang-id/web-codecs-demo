@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from 'antd'
 import { Muxer as MuxerMp4, StreamTarget } from 'mp4-muxer'
+import Style from './CanvasExportVideo.module.less'
 
 type Size = {
   width: number
@@ -20,15 +21,11 @@ function createOutHandler(
 ): {
   handler: EncodedVideoChunkOutputCallback
   muxer: MuxerMp4<StreamTarget>
-  buffers: Uint8Array[]
 } {
   const { width, height } = size
-  const buffers: Uint8Array[] = []
   let muxer = new MuxerMp4({
     target: new StreamTarget({
       onData: (buffer, _) => {
-        // console.log('buffer', buffer)
-        buffers.push(buffer)
         sourceBuffer.appendBuffer(buffer)
       },
     }),
@@ -38,10 +35,9 @@ function createOutHandler(
       height,
     },
     fastStart: 'fragmented',
-    // firstTimestampBehavior: 'offset',
+    firstTimestampBehavior: 'offset',
   })
   return {
-    buffers,
     muxer,
     handler: (chunk, meta) => {
       muxer.addVideoChunk(chunk, meta)
@@ -53,7 +49,7 @@ function draw(ctx: CanvasRenderingContext2D, from: Position, to: Position) {
   ctx.beginPath()
   ctx.moveTo(from.x, from.y)
   ctx.lineTo(to.x, to.y)
-  ctx.strokeStyle = 'black'
+  ctx.strokeStyle = '#ffffff'
   ctx.lineWidth = 3
   ctx.lineCap = 'round'
   ctx.stroke()
@@ -90,12 +86,6 @@ async function record(canvas: HTMLCanvasElement, video: HTMLVideoElement) {
     let framesGenerated = 0
     let intervalId: NodeJS.Timeout | null = null
 
-    const cas = document.createElement('canvas')
-    cas.width = width
-    cas.height = height
-    const ctx = cas.getContext('2d')
-    document.body.appendChild(cas)
-
     const encodeVideoFrame = () => {
       let elapsedTime =
         (document.timeline.currentTime as number) - (startTime as number)
@@ -104,8 +94,6 @@ async function record(canvas: HTMLCanvasElement, video: HTMLVideoElement) {
         timestamp: (framesGenerated * 1e6) / 30,
         duration: 1e6 / 30,
       })
-
-      ctx?.drawImage(frame, 0, 0, width, height)
 
       framesGenerated++
 
@@ -142,8 +130,8 @@ export default function CanvasExportVideo() {
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.fillStyle = `rgba(255,165,0,1)`
-    // ctx.fillStyle = `rgba(255,255,255,1)`
+    // ctx.fillStyle = `rgba(255,165,0,1)`
+    ctx.fillStyle = `rgba(0,0,0,1)`
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     canvas.addEventListener('pointerdown', (event: PointerEvent) => {
@@ -174,17 +162,24 @@ export default function CanvasExportVideo() {
     <div>
       <Button onClick={handleStart}>开始录制</Button>
 
-      <canvas ref={canvasRef} width={720} height={480} />
+      <div style={{ marginTop: 20 }}>
+        <canvas
+          ref={canvasRef}
+          width={480}
+          height={480}
+          style={{ marginRight: 20 }}
+        />
 
-      <video
-        ref={videoRef}
-        controls
-        autoPlay
-        style={{
-          width: 720,
-          height: 480,
-        }}
-      />
+        <video
+          ref={videoRef}
+          controls
+          autoPlay
+          style={{
+            width: 480,
+            height: 480,
+          }}
+        />
+      </div>
     </div>
   )
 }
