@@ -22,6 +22,18 @@ const Routes = {
     path: '/gif-to-video',
     label: '动图转视频',
   },
+
+  ClipVideo: {
+    key: 'ClipVideo',
+    path: '/clip-video',
+    label: '视频裁剪',
+  },
+
+  VideoWatermark: {
+    key: 'VideoWatermark',
+    path: '/video-watermark',
+    label: '视频水印',
+  },
 } as const
 
 export default Routes

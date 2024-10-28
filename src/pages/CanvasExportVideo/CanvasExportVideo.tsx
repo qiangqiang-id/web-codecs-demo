@@ -1,7 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Button } from 'antd'
 import { Muxer as MuxerMp4, StreamTarget } from 'mp4-muxer'
-import Style from './CanvasExportVideo.module.less'
 
 type Size = {
   width: number
@@ -23,9 +22,9 @@ function createOutHandler(
   muxer: MuxerMp4<StreamTarget>
 } {
   const { width, height } = size
-  let muxer = new MuxerMp4({
+  const muxer = new MuxerMp4({
     target: new StreamTarget({
-      onData: (buffer, _) => {
+      onData: (buffer) => {
         sourceBuffer.appendBuffer(buffer)
       },
     }),
@@ -56,14 +55,14 @@ function draw(ctx: CanvasRenderingContext2D, from: Position, to: Position) {
 }
 
 async function record(canvas: HTMLCanvasElement, video: HTMLVideoElement) {
-  let mediaSource = new MediaSource()
+  const mediaSource = new MediaSource()
   const width = canvas.width
   const height = canvas.height
 
   video.src = URL.createObjectURL(mediaSource)
 
   mediaSource.addEventListener('sourceopen', async () => {
-    let sourceBuffer = mediaSource.addSourceBuffer(
+    const sourceBuffer = mediaSource.addSourceBuffer(
       'video/mp4; codecs="avc1.64001F'
     )
 
@@ -81,23 +80,23 @@ async function record(canvas: HTMLCanvasElement, video: HTMLVideoElement) {
       bitrate: 3_000_000,
     })
 
-    let startTime = document.timeline.currentTime
+    const startTime = document.timeline.currentTime
     let lastKeyFrame = -Infinity
     let framesGenerated = 0
-    let intervalId: NodeJS.Timeout | null = null
+    // let intervalId: NodeJS.Timeout | null = null
 
     const encodeVideoFrame = () => {
-      let elapsedTime =
+      const elapsedTime =
         (document.timeline.currentTime as number) - (startTime as number)
 
-      let frame = new VideoFrame(canvas, {
+      const frame = new VideoFrame(canvas, {
         timestamp: (framesGenerated * 1e6) / 30,
         duration: 1e6 / 30,
       })
 
       framesGenerated++
 
-      let needsKeyFrame = elapsedTime - lastKeyFrame >= 500
+      const needsKeyFrame = elapsedTime - lastKeyFrame >= 500
       if (needsKeyFrame) lastKeyFrame = elapsedTime
 
       videoEncoder.encode(frame, { keyFrame: needsKeyFrame })
@@ -105,13 +104,22 @@ async function record(canvas: HTMLCanvasElement, video: HTMLVideoElement) {
     }
     encodeVideoFrame()
 
-    intervalId = setInterval(encodeVideoFrame, 1000 / 30)
+    // intervalId =
+    setInterval(encodeVideoFrame, 1000 / 30)
   })
 }
 
 function getRelativeMousePos(canvas: HTMLCanvasElement, e: PointerEvent) {
-  let rect = canvas.getBoundingClientRect()
+  const rect = canvas.getBoundingClientRect()
   return { x: e.clientX - rect.x, y: e.clientY - rect.y }
+}
+
+function initCanvas(ctx: CanvasRenderingContext2D) {
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  // ctx.fillStyle = `rgba(255,165,0,1)`
+  ctx.fillStyle = `rgba(0,0,0,1)`
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 }
 
 export default function CanvasExportVideo() {
@@ -129,18 +137,14 @@ export default function CanvasExportVideo() {
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    // ctx.fillStyle = `rgba(255,165,0,1)`
-    ctx.fillStyle = `rgba(0,0,0,1)`
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-
+    initCanvas(ctx)
     canvas.addEventListener('pointerdown', (event: PointerEvent) => {
       lastPos = getRelativeMousePos(canvas, event)
 
       draw(ctx, lastPos, lastPos)
 
       const handleMove = (event: PointerEvent) => {
-        let newPos = getRelativeMousePos(canvas, event)
+        const newPos = getRelativeMousePos(canvas, event)
         draw(ctx, lastPos, newPos)
         lastPos = newPos
       }
@@ -154,12 +158,18 @@ export default function CanvasExportVideo() {
     })
   }
 
+  const handleClearCanvas = () => {
+    const ctx = canvasRef.current?.getContext('2d')
+    ctx && initCanvas(ctx)
+  }
+
   useEffect(() => {
     registerEvent()
   }, [])
 
   return (
     <div>
+      <Button onClick={handleClearCanvas}>擦除画布</Button>
       <Button onClick={handleStart}>开始录制</Button>
 
       <div style={{ marginTop: 20 }}>

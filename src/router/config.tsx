@@ -5,6 +5,8 @@ import SupportedCodec from '@/pages/SupportedCodec'
 import CanvasExportVideo from '@/pages/CanvasExportVideo'
 import FFmpegTransform from '@/pages/FFmpegTransform'
 import GifToVideo from '@/pages/GifToVideo'
+import ClipVideo from '@/pages/ClipVideo'
+import VideoWatermark from '@/pages/VideoWatermark'
 
 const routerData = [
   {
@@ -29,6 +31,16 @@ const routerData = [
       {
         ...Routes.GifToVideo,
         element: <GifToVideo />,
+      },
+
+      {
+        ...Routes.ClipVideo,
+        element: <ClipVideo />,
+      },
+
+      {
+        ...Routes.VideoWatermark,
+        element: <VideoWatermark />,
       },
     ],
   },

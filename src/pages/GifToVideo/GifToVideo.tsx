@@ -7,11 +7,7 @@ import Upload from '@/components/Upload'
 import { useRef, useState } from 'react'
 import { makeImage } from '@/utils/Image'
 import Style from './GifToVideo.module.less'
-
-const fetchImageByteStream = async (url: string) => {
-  const response = await fetch(url)
-  return response.body!
-}
+import { fetchImageByteStream } from '@/utils/fetch'
 
 function createOutHandler(
   width: number,
@@ -20,7 +16,7 @@ function createOutHandler(
   handler: EncodedVideoChunkOutputCallback
   muxer: MuxerMp4<ArrayBufferTargetMp4>
 } {
-  let muxer = new MuxerMp4({
+  const muxer = new MuxerMp4({
     target: new ArrayBufferTargetMp4(),
     video: {
       codec: 'vp9',
@@ -52,7 +48,7 @@ export default function GifToVideo() {
 
     const imageDecoder = new ImageDecoder(info)
     await Promise.all([imageDecoder.completed, imageDecoder.tracks.ready])
-    let frameCnt = imageDecoder.tracks.selectedTrack?.frameCount ?? 1
+    const frameCnt = imageDecoder.tracks.selectedTrack?.frameCount ?? 1
     const frames: VideoFrame[] = []
     for (let i = 0; i < frameCnt; i += 1) {
       frames.push((await imageDecoder.decode({ frameIndex: i })).image)
@@ -89,6 +85,8 @@ export default function GifToVideo() {
       bitrate: 1e6,
     })
 
+    console.log(frames)
+
     frames?.forEach((frame) => {
       videoEncoder.encode(frame, { keyFrame: true })
       frame.close()
@@ -97,7 +95,7 @@ export default function GifToVideo() {
     await videoEncoder.flush()
     outHandler.muxer.finalize()
 
-    let { buffer } = outHandler.muxer.target
+    const { buffer } = outHandler.muxer.target
 
     const file = new File([buffer], 'test.mp4')
 
