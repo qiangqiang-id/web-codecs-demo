@@ -23,38 +23,32 @@ const DEFAULT_RECT: RectData = {
   rotate: 0,
 }
 
-function canvasClip(frames: VideoFrame[], rect: RectData) {
-  const canvas = document.createElement('canvas')
+const canvas = document.createElement('canvas')
+const ctx = canvas.getContext('2d')
+
+function canvasClip(frame: VideoFrame, rect: RectData) {
+  if (!ctx) return
   canvas.width = rect.width
   canvas.height = rect.height
-  const firstFrame = frames[0]
-  const ctx = canvas.getContext('2d')
-  if (!ctx || !firstFrame) return []
-
-  const videoFrames: VideoFrame[] = []
-
-  frames.forEach((frame) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(
-      frame,
-      rect.x,
-      rect.y,
-      rect.width,
-      rect.height,
-      0,
-      0,
-      rect.width,
-      rect.height
-    )
-    const newFrame = new VideoFrame(canvas, {
-      duration: frame.duration || 0,
-      timestamp: frame.timestamp,
-    })
-    frame.close()
-    videoFrames.push(newFrame)
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.drawImage(
+    frame,
+    rect.x,
+    rect.y,
+    rect.width,
+    rect.height,
+    0,
+    0,
+    rect.width,
+    rect.height
+  )
+  const newFrame = new VideoFrame(canvas, {
+    duration: frame.duration || 0,
+    timestamp: frame.timestamp,
   })
+  frame.close()
 
-  return videoFrames
+  return newFrame
 }
 
 export default function ClipVideo() {
@@ -147,40 +141,67 @@ export default function ClipVideo() {
   }
 
   const handleClipByCodecs = async () => {
-    if (!videoUrl) return
-    const res = await decoderHandle(videoUrl)
-    if (!res) return
-    const { videoSamples, audioSamples, config } = res
-    const rectInfo = await transformRectInfo()
-    const frames = await canvasClip(videoSamples, rectInfo)
-    const file = await encoderHandle(frames, audioSamples, config)
-    file && setNewVideoUrl(URL.createObjectURL(file))
+    console.time('webCodecs处理时间')
+    try {
+      if (!videoUrl) return
+
+      const videoSamples: VideoFrame[] = []
+      const audioSamples: AudioData[] = []
+      const rectInfo = await transformRectInfo()
+      const onSamples = async (
+        type: 'video' | 'audio',
+        samples: VideoFrame | AudioData
+      ) => {
+        if (type === 'video') {
+          const frame = await canvasClip(samples as VideoFrame, rectInfo)
+          frame && videoSamples.push(frame)
+          return
+        }
+        audioSamples.push(samples as AudioData)
+      }
+
+      const res = await decoderHandle(videoUrl, onSamples)
+      if (!res) return
+      const { config } = res
+
+      const file = await encoderHandle(videoSamples, audioSamples, config)
+      file && setNewVideoUrl(URL.createObjectURL(file))
+    } catch (e) {
+      console.error('视频处理失败：', e)
+    } finally {
+      console.timeEnd('webCodecs处理时间')
+    }
   }
 
   const handleClipByFFmpeg = async () => {
-    if (!videoUrl) return
-    const file = await fetchUrlFile(videoUrl)
-    const newFile = await FFmpeg.customTransformVideo(file, {
-      crop: await transformRectInfo(),
-    })
-    setNewVideoUrl(URL.createObjectURL(newFile))
+    console.time('ffmpeg处理时间')
+    try {
+      if (!videoUrl) return
+      const file = await fetchUrlFile(videoUrl)
+      const newFile = await FFmpeg.customTransformVideo(file, {
+        crop: await transformRectInfo(),
+      })
+      setNewVideoUrl(URL.createObjectURL(newFile))
+    } catch (e) {
+      console.error('视频处理失败：', e)
+    } finally {
+      console.timeEnd('ffmpeg处理时间')
+    }
   }
 
   return (
     <div>
       <Upload accept={['video/*']} onChange={handleChange}>
-        <Button type="primary">获取视频</Button>
+        <Button>获取视频</Button>
       </Upload>
 
-      <Button type="primary" onClick={handleClipByCodecs}>
+      <Button onClick={handleClipByCodecs} style={{ margin: '0 20px' }}>
         webCodecs裁剪
       </Button>
 
-      <Button type="primary" onClick={handleClipByFFmpeg}>
-        FFmpeg裁剪
-      </Button>
+      <Button onClick={handleClipByFFmpeg}>FFmpeg裁剪</Button>
 
-      <div>
+      <div style={{ marginTop: 20 }}>
         <div className={Style['video-item']} ref={videoWrapperRef}>
           {videoUrl && <video src={videoUrl} controls />}
 

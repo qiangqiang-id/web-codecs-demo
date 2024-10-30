@@ -71,20 +71,21 @@ async function parse(
   await readFileChunk()
 }
 
-export async function decoderHandle(url: string) {
+export async function decoderHandle(
+  url: string,
+  onSamples: (type: 'audio' | 'video', samples: VideoFrame | AudioData) => void
+) {
   const reader = (await fetch(url)).body?.getReader()
 
   if (!reader) return
 
   const mp4boxFile = mp4box.createFile()
 
-  const videoSamples: VideoFrame[] = []
-  const audioSamples: AudioData[] = []
   const config: Config = {}
 
   const videoDecoder = new VideoDecoder({
     output: (frame) => {
-      videoSamples.push(frame)
+      onSamples('video', frame)
     },
     error: (err) => {
       console.error(err)
@@ -93,7 +94,7 @@ export async function decoderHandle(url: string) {
 
   const audioDecoder = new AudioDecoder({
     output: (ad) => {
-      audioSamples.push(ad)
+      onSamples('audio', ad)
     },
     error: (err) => {
       console.error(err)
@@ -198,7 +199,7 @@ export async function decoderHandle(url: string) {
 
   isNumber(aTrackId) && (await audioDecoder.flush())
 
-  return { videoSamples, audioSamples, config }
+  return { config }
 }
 
 function createOutHandler(

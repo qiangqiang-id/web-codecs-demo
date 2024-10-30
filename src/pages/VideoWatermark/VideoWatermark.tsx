@@ -30,41 +30,34 @@ function movements(x: number, y: number, canvas: HTMLCanvasElement) {
   return { x, y }
 }
 
-function addWatermark(
-  frames: VideoFrame[],
-  config?: Parameters<VideoDecoder['configure']>[0]
-) {
-  const canvas = document.createElement('canvas')
-  canvas.width = config?.codedWidth || 400
-  canvas.height = config?.codedHeight || 400
+const canvas = document.createElement('canvas')
+const ctx = canvas.getContext('2d')
+let x = 0
+let y = FONT_SIZE
 
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return []
+function addWatermark(frame: VideoFrame) {
+  if (!ctx) return
 
-  const videoFrames: VideoFrame[] = []
+  canvas.width = frame.codedWidth
+  canvas.height = frame.codedHeight
 
-  let x = 0
-  let y = FONT_SIZE
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-  frames.forEach((frame) => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.drawImage(frame, 0, 0, canvas.width, canvas.height)
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+  ctx.font = `${FONT_SIZE}px Arial`
 
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height)
-    ctx.fillStyle = 'rgba(255,255,255,0.5)'
-    ctx.font = `${FONT_SIZE}px Arial`
-
-    ctx.fillText(WATERMARK_TEXT, x, y)
-    const position = movements(x, y, canvas)
-    x = position.x
-    y = position.y
-    const newFrame = new VideoFrame(canvas, {
-      duration: frame.duration || 0,
-      timestamp: frame.timestamp,
-    })
-    frame.close()
-    videoFrames.push(newFrame)
+  ctx.fillText(WATERMARK_TEXT, x, y)
+  const position = movements(x, y, canvas)
+  x = position.x
+  y = position.y
+  const newFrame = new VideoFrame(canvas, {
+    duration: frame.duration || 0,
+    timestamp: frame.timestamp,
   })
-  return videoFrames
+  frame.close()
+
+  return newFrame
 }
 
 export default function VideoWatermark() {
@@ -80,11 +73,25 @@ export default function VideoWatermark() {
 
   const handleAddWatermark = async () => {
     if (!videoUrl) return
-    const res = await decoderHandle(videoUrl)
+
+    const videoSamples: VideoFrame[] = []
+    const audioSamples: AudioData[] = []
+    const onSamples = async (
+      type: 'video' | 'audio',
+      samples: VideoFrame | AudioData
+    ) => {
+      if (type === 'video') {
+        const frame = await addWatermark(samples as VideoFrame)
+        frame && videoSamples.push(frame)
+        return
+      }
+      audioSamples.push(samples as AudioData)
+    }
+
+    const res = await decoderHandle(videoUrl, onSamples)
     if (!res) return
-    const { videoSamples, audioSamples, config } = res
-    const frames = addWatermark(videoSamples, config.video)
-    const file = await encoderHandle(frames, audioSamples, config)
+    const { config } = res
+    const file = await encoderHandle(videoSamples, audioSamples, config)
     file && setNewVideoUrl(URL.createObjectURL(file))
   }
 
