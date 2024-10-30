@@ -8,6 +8,7 @@ import { useRef, useState } from 'react'
 import { makeImage } from '@/utils/Image'
 import Style from './GifToVideo.module.less'
 import { fetchUrlByteStream } from '@/utils/fetch'
+import StatusEnum, { StatusLabel } from '@/constants/StatusEnum'
 
 function createOutHandler(
   width: number,
@@ -34,7 +35,7 @@ function createOutHandler(
 export default function GifToVideo() {
   const [imageUrl, setImageUrl] = useState('')
   const [videUrl, setVideoUrl] = useState('')
-
+  const [status, setStatus] = useState<StatusEnum>()
   const fileTypeRef = useRef('')
 
   const imageDecode = async () => {
@@ -64,42 +65,48 @@ export default function GifToVideo() {
   }
 
   const handleTransform = async () => {
-    if (!imageUrl) return
-    const frames = await imageDecode()
-    const image = await makeImage(imageUrl)
-    const width = image.width
-    const height = image.height
+    try {
+      if (!imageUrl) return
+      setStatus(StatusEnum.PENDING)
+      const frames = await imageDecode()
+      const image = await makeImage(imageUrl)
+      const width = image.width
+      const height = image.height
 
-    const outHandler = createOutHandler(width, height)
+      const outHandler = createOutHandler(width, height)
 
-    const videoEncoder = new VideoEncoder({
-      output: outHandler.handler,
-      error: (e) => console.error('Video encoding error', e),
-    })
+      const videoEncoder = new VideoEncoder({
+        output: outHandler.handler,
+        error: (e) => console.error('Video encoding error', e),
+      })
 
-    videoEncoder.configure({
-      // codec: 'avc1.42E01F',
-      codec: 'vp09.00.10.08',
-      width,
-      height,
-      bitrate: 1e6,
-    })
+      videoEncoder.configure({
+        // codec: 'avc1.42E01F',
+        codec: 'vp09.00.10.08',
+        width,
+        height,
+        bitrate: 1e6,
+      })
 
-    console.log(frames)
+      console.log(frames)
 
-    frames?.forEach((frame) => {
-      videoEncoder.encode(frame, { keyFrame: true })
-      frame.close()
-    })
+      frames?.forEach((frame) => {
+        videoEncoder.encode(frame, { keyFrame: true })
+        frame.close()
+      })
 
-    await videoEncoder.flush()
-    outHandler.muxer.finalize()
+      await videoEncoder.flush()
+      outHandler.muxer.finalize()
 
-    const { buffer } = outHandler.muxer.target
+      const { buffer } = outHandler.muxer.target
 
-    const file = new File([buffer], 'test.mp4')
-
-    setVideoUrl(URL.createObjectURL(file))
+      const file = new File([buffer], 'test.mp4')
+      setVideoUrl(URL.createObjectURL(file))
+      setStatus(StatusEnum.SUCCESS)
+    } catch (e) {
+      console.error('动图处理失败：', e)
+      setStatus(StatusEnum.FAIL)
+    }
   }
 
   return (
@@ -111,6 +118,10 @@ export default function GifToVideo() {
         <Button style={{ marginLeft: 20 }} onClick={handleTransform}>
           转成视频
         </Button>
+
+        <span style={{ marginLeft: 20, color: 'red' }}>
+          {status ? StatusLabel[status] : ''}
+        </span>
       </div>
 
       <div className={Style.container}>

@@ -3,6 +3,7 @@ import { Button } from 'antd'
 import Upload from '@/components/Upload'
 import { decoderHandle, encoderHandle } from '@/core/Codecs'
 import Style from './VideoWatermark.module.less'
+import StatusEnum, { StatusLabel } from '@/constants/StatusEnum'
 
 /** 横向移动速度 */
 let DIRECTION_X = 16
@@ -65,6 +66,8 @@ export default function VideoWatermark() {
 
   const [newVideoUrl, setNewVideoUrl] = useState('')
 
+  const [status, setStatus] = useState<StatusEnum>()
+
   const handleChange = (files: File[]) => {
     const file = files[0]
     if (!file) return
@@ -72,27 +75,36 @@ export default function VideoWatermark() {
   }
 
   const handleAddWatermark = async () => {
-    if (!videoUrl) return
+    try {
+      if (!videoUrl) return
+      setStatus(StatusEnum.PENDING)
+      const videoSamples: VideoFrame[] = []
+      const audioSamples: AudioData[] = []
+      const onSamples = async (
+        type: 'video' | 'audio',
+        samples: VideoFrame | AudioData
+      ) => {
+        if (type === 'video') {
+          const frame = await addWatermark(samples as VideoFrame)
+          frame && videoSamples.push(frame)
+          return
+        }
+        audioSamples.push(samples as AudioData)
+      }
 
-    const videoSamples: VideoFrame[] = []
-    const audioSamples: AudioData[] = []
-    const onSamples = async (
-      type: 'video' | 'audio',
-      samples: VideoFrame | AudioData
-    ) => {
-      if (type === 'video') {
-        const frame = await addWatermark(samples as VideoFrame)
-        frame && videoSamples.push(frame)
+      const res = await decoderHandle(videoUrl, onSamples)
+      if (!res) {
+        setStatus(StatusEnum.FAIL)
         return
       }
-      audioSamples.push(samples as AudioData)
+      const { config } = res
+      const file = await encoderHandle(videoSamples, audioSamples, config)
+      file && setNewVideoUrl(URL.createObjectURL(file))
+      setStatus(StatusEnum.SUCCESS)
+    } catch (e) {
+      console.error('视频处理失败：', e)
+      setStatus(StatusEnum.FAIL)
     }
-
-    const res = await decoderHandle(videoUrl, onSamples)
-    if (!res) return
-    const { config } = res
-    const file = await encoderHandle(videoSamples, audioSamples, config)
-    file && setNewVideoUrl(URL.createObjectURL(file))
   }
 
   return (
@@ -109,6 +121,10 @@ export default function VideoWatermark() {
       >
         增加水印
       </Button>
+
+      <span style={{ marginLeft: 20, color: 'red' }}>
+        {status ? StatusLabel[status] : ''}
+      </span>
 
       <div style={{ marginTop: 20 }}>
         <div className={Style['video-item']}>

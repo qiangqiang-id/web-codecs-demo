@@ -14,6 +14,7 @@ import { decoderHandle, encoderHandle } from '@/core/Codecs'
 import { fetchUrlFile } from '@/utils/fetch'
 import FFmpeg from '@/core/FFmpeg'
 import getVideoDimensions from '@/utils/getVideoDimensions'
+import StatusEnum, { StatusLabel } from '@/constants/StatusEnum'
 
 const DEFAULT_RECT: RectData = {
   x: 0,
@@ -54,6 +55,8 @@ function canvasClip(frame: VideoFrame, rect: RectData) {
 export default function ClipVideo() {
   const [videoUrl, setVideoUrl] = useState('')
   const [newVideoUrl, setNewVideoUrl] = useState('')
+
+  const [status, setStatus] = useState<StatusEnum>()
 
   const [rectInfo, setRectInfo] = useState<RectData>(DEFAULT_RECT)
 
@@ -145,6 +148,8 @@ export default function ClipVideo() {
     try {
       if (!videoUrl) return
 
+      setStatus(StatusEnum.PENDING)
+
       const videoSamples: VideoFrame[] = []
       const audioSamples: AudioData[] = []
       const rectInfo = await transformRectInfo()
@@ -166,8 +171,11 @@ export default function ClipVideo() {
 
       const file = await encoderHandle(videoSamples, audioSamples, config)
       file && setNewVideoUrl(URL.createObjectURL(file))
+
+      setStatus(StatusEnum.SUCCESS)
     } catch (e) {
       console.error('视频处理失败：', e)
+      setStatus(StatusEnum.FAIL)
     } finally {
       console.timeEnd('webCodecs处理时间')
     }
@@ -177,13 +185,16 @@ export default function ClipVideo() {
     console.time('ffmpeg处理时间')
     try {
       if (!videoUrl) return
+      setStatus(StatusEnum.PENDING)
       const file = await fetchUrlFile(videoUrl)
       const newFile = await FFmpeg.customTransformVideo(file, {
         crop: await transformRectInfo(),
       })
       setNewVideoUrl(URL.createObjectURL(newFile))
+      setStatus(StatusEnum.SUCCESS)
     } catch (e) {
       console.error('视频处理失败：', e)
+      setStatus(StatusEnum.FAIL)
     } finally {
       console.timeEnd('ffmpeg处理时间')
     }
@@ -200,6 +211,10 @@ export default function ClipVideo() {
       </Button>
 
       <Button onClick={handleClipByFFmpeg}>FFmpeg裁剪</Button>
+
+      <span style={{ marginLeft: 20, color: 'red' }}>
+        {status ? StatusLabel[status] : ''}
+      </span>
 
       <div style={{ marginTop: 20 }}>
         <div className={Style['video-item']} ref={videoWrapperRef}>

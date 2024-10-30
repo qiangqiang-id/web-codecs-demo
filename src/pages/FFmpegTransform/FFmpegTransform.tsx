@@ -3,11 +3,15 @@ import { Button } from 'antd'
 import Upload from '@/components/Upload'
 import FFmpeg from '@/core/FFmpeg'
 import Style from './FFmpegTransform.module.less'
+import StatusEnum, { StatusLabel } from '@/constants/StatusEnum'
 
 export default function FFmpegTransform() {
   const fileRef = useRef<File>()
   const [videoUrl, setVideoUrl] = useState('')
   const [newVideoUrl, setNewVideoUrl] = useState('')
+
+  const [status, setStatus] = useState<StatusEnum>()
+
   const handleChange = (files: File[]) => {
     const file = files[0]
     if (!file) return
@@ -16,19 +20,25 @@ export default function FFmpegTransform() {
   }
 
   const handleTransform = async () => {
-    if (!fileRef.current) return
+    try {
+      if (!fileRef.current) return
+      setStatus(StatusEnum.PENDING)
+      const newFile = await FFmpeg.customTransformVideo(fileRef.current, {
+        crop: {
+          x: 0,
+          y: 0,
+          width: 640,
+          height: 360,
+        },
+        fps: 25,
+      })
 
-    const newFile = await FFmpeg.customTransformVideo(fileRef.current, {
-      crop: {
-        x: 0,
-        y: 0,
-        width: 640,
-        height: 360,
-      },
-      fps: 25,
-    })
-
-    setNewVideoUrl(URL.createObjectURL(newFile))
+      setNewVideoUrl(URL.createObjectURL(newFile))
+      setStatus(StatusEnum.SUCCESS)
+    } catch (e) {
+      console.error('视频处理失败：', e)
+      setStatus(StatusEnum.FAIL)
+    }
   }
 
   return (
@@ -41,6 +51,10 @@ export default function FFmpegTransform() {
         <Button style={{ marginLeft: 20 }} onClick={handleTransform}>
           ffmpeg转换
         </Button>
+
+        <span style={{ marginLeft: 20, color: 'red' }}>
+          {status ? StatusLabel[status] : ''}
+        </span>
       </div>
 
       <div style={{ marginTop: 20 }}>
