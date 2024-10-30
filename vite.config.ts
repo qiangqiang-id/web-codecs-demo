@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src'),
+      '@p': path.resolve(__dirname, 'packages'),
     },
   },
   plugins: [

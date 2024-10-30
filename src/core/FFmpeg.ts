@@ -6,6 +6,16 @@ import { ProgressEventCallback } from '@ffmpeg/ffmpeg/dist/esm/types'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
 import { fileTypeFromBuffer } from 'file-type'
 
+const BASE_URL =
+  'https://digital-bhb-frontend.bhbcdn.com/static/ffmpeg/ffmpeg-multithreading'
+
+const FFMPEG_CORE_JS = `${BASE_URL}/ffmpeg-core.js`
+
+const FFMPEG_CORE_WASM = `${BASE_URL}/ffmpeg-core.wasm`
+
+// const FFMPEG_WORKER_JS = `${BASE_URL}/worker.js`;
+const FFMPEG_WORKER_JS = `${BASE_URL}/ffmpeg-core.worker.js`
+
 class FFmpeg {
   static instance: FFmpeg | null = null
 
@@ -33,11 +43,16 @@ class FFmpeg {
    * 加载资源
    *  */
   private async loadResource() {
+    console.log('chufa--------')
     await this.ffmpeg.load({
-      coreURL: await toBlobURL(`./ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`./ffmpeg-core.wasm`, 'application/wasm'),
-      workerURL: await toBlobURL(`./ffmpeg-core.worker.js`, 'text/javascript'),
+      // coreURL: await toBlobURL(`./ffmpeg-core.js`, 'text/javascript'),
+      // wasmURL: await toBlobURL(`./ffmpeg-core.wasm`, 'application/wasm'),
+      // workerURL: await toBlobURL(`./ffmpeg-core.worker.js`, 'text/javascript'),
+      coreURL: await toBlobURL(FFMPEG_CORE_JS, 'text/javascript'),
+      wasmURL: await toBlobURL(FFMPEG_CORE_WASM, 'application/wasm'),
+      workerURL: await toBlobURL(FFMPEG_WORKER_JS, 'text/javascript'),
     })
+    console.log('chufa++++++')
   }
 
   /**
@@ -236,10 +251,10 @@ class FFmpeg {
   /**
    * 取消转换
    *  */
-  public cancel() {
+  public async cancel() {
     // 终止 FFmpeg 实例以取消操作
     this.ffmpeg.terminate()
-    this.loadResource()
+    await this.loadResource()
   }
 }
 

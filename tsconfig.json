@@ -24,7 +24,6 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,
-    "suppressImplicitAnyIndexErrors": true,
     "ignoreDeprecations": "5.0",
     "isolatedModules": true,
     "jsx": "preserve",
@@ -38,7 +37,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@p/*": ["./packages/*"]
     },
     "pretty": true,
     "resolveJsonModule": true,
@@ -60,6 +60,7 @@
     ]
   },
   "include": [
+    "packages",
     "src",
     "vite.config.ts",
     "lib.d.ts",

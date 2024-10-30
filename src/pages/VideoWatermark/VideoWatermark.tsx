@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from 'antd'
 import Upload from '@/components/Upload'
-import { decoderHandle, encoderHandle } from './Codecs'
+import { decoderHandle, encoderHandle } from '@/core/Codecs'
 import Style from './VideoWatermark.module.less'
 
 /** 横向移动速度 */
@@ -23,7 +23,7 @@ function movements(x: number, y: number, canvas: HTMLCanvasElement) {
     /** 反转水平速度 */
     DIRECTION_X *= -1
   }
-  if (y + FONT_SIZE > canvas.height || y < 0) {
+  if (y > canvas.height || y < FONT_SIZE) {
     /** 反转垂直速度 */
     DIRECTION_Y *= -1
   }

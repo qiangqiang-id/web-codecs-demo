@@ -7,7 +7,7 @@ import Upload from '@/components/Upload'
 import { useRef, useState } from 'react'
 import { makeImage } from '@/utils/Image'
 import Style from './GifToVideo.module.less'
-import { fetchImageByteStream } from '@/utils/fetch'
+import { fetchUrlByteStream } from '@/utils/fetch'
 
 function createOutHandler(
   width: number,
@@ -39,7 +39,7 @@ export default function GifToVideo() {
 
   const imageDecode = async () => {
     if (!imageUrl) return
-    const stream = await fetchImageByteStream(imageUrl)
+    const stream = await fetchUrlByteStream(imageUrl)
 
     const info = {
       type: fileTypeRef.current,
