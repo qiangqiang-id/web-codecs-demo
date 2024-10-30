@@ -24,7 +24,8 @@ function createOutHandler(
   const { width, height } = size
   const muxer = new MuxerMp4({
     target: new StreamTarget({
-      onData: (buffer) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onData: (buffer, _) => {
         sourceBuffer.appendBuffer(buffer)
       },
     }),
@@ -138,9 +139,9 @@ export default function CanvasExportVideo() {
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
     initCanvas(ctx)
+
     canvas.addEventListener('pointerdown', (event: PointerEvent) => {
       lastPos = getRelativeMousePos(canvas, event)
-
       draw(ctx, lastPos, lastPos)
 
       const handleMove = (event: PointerEvent) => {
