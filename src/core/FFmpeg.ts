@@ -34,9 +34,13 @@ class FFmpeg {
   isWorked = false
 
   constructor() {
-    this.loadResource()
+    this.loadWasmFile()
     this.addLog()
     this.addProgressListener()
+  }
+
+  private async loadWasmFile() {
+    await toBlobURL(FFMPEG_CORE_WASM, 'application/wasm')
   }
 
   /**
@@ -129,6 +133,7 @@ class FFmpeg {
       this.isWorked = false
       progressCallback && this.ffmpeg.off('progress', progressCallback)
       this.ffmpeg.deleteFile(newName)
+      this.cancel()
     }
   }
 
@@ -254,7 +259,6 @@ class FFmpeg {
   public async cancel() {
     // 终止 FFmpeg 实例以取消操作
     this.ffmpeg.terminate()
-    await this.loadResource()
   }
 }
 
