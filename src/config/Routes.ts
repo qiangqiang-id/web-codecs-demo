@@ -34,6 +34,12 @@ const Routes = {
     path: '/video-watermark',
     label: '视频水印',
   },
+
+  ChromaKey: {
+    key: 'ChromaKey',
+    path: '/chroma-key',
+    label: '视频抠像',
+  },
 } as const
 
 export default Routes

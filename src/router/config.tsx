@@ -7,6 +7,7 @@ import FFmpegTransform from '@/pages/FFmpegTransform'
 import GifToVideo from '@/pages/GifToVideo'
 import ClipVideo from '@/pages/ClipVideo'
 import VideoWatermark from '@/pages/VideoWatermark'
+import ChromaKey from '@/pages/ChromaKey'
 
 const routerData = [
   {
@@ -41,6 +42,11 @@ const routerData = [
       {
         ...Routes.VideoWatermark,
         element: <VideoWatermark />,
+      },
+
+      {
+        ...Routes.ChromaKey,
+        element: <ChromaKey />,
       },
     ],
   },
