@@ -46,49 +46,56 @@ export default function ChromaKey() {
   }
 
   const onChromaKey = async () => {
-    if (!videoUrl) return
-    const size = await getVideoDimensions(videoUrl)
-    const colorKey = hexToRgb(color) || [0, 255, 0]
-    const data = createCanvas({
-      ...OPTIONS,
-      ...size,
-      colorKey,
-    })
-    if (!data) return
-    const { canvas, gl } = data
-    const texture = initTexture(gl)
+    try {
+      if (!videoUrl) return
+      const size = await getVideoDimensions(videoUrl)
+      const colorKey = hexToRgb(color) || [0, 255, 0]
+      const data = createCanvas({
+        ...OPTIONS,
+        ...size,
+        colorKey,
+      })
+      if (!data) return
+      setStatus(StatusEnum.PENDING)
+      const { canvas, gl } = data
+      const texture = initTexture(gl)
 
-    const videoSamples: VideoFrame[] = []
-    const audioSamples: AudioData[] = []
+      const videoSamples: VideoFrame[] = []
+      const audioSamples: AudioData[] = []
 
-    const onSamples = async (
-      type: 'video' | 'audio',
-      samples: VideoFrame | AudioData
-    ) => {
-      if (type === 'video') {
-        const frame = samples as VideoFrame
-        updateTexture(gl, frame, texture)
-        const newFrame = new VideoFrame(canvas, {
-          alpha: 'keep',
-          timestamp: frame.timestamp,
-          duration: frame.duration ?? undefined,
-        })
-        frame.close()
-        videoSamples.push(newFrame)
-        return
+      const onSamples = async (
+        type: 'video' | 'audio',
+        samples: VideoFrame | AudioData
+      ) => {
+        if (type === 'video') {
+          const frame = samples as VideoFrame
+          updateTexture(gl, frame, texture)
+          const newFrame = new VideoFrame(canvas, {
+            alpha: 'keep',
+            timestamp: frame.timestamp,
+            duration: frame.duration ?? undefined,
+          })
+          frame.close()
+          videoSamples.push(newFrame)
+          return
+        }
+
+        audioSamples.push(samples as AudioData)
       }
 
-      audioSamples.push(samples as AudioData)
-    }
-
-    const res = await decoderHandle(videoUrl, onSamples)
-    if (!res) {
+      const res = await decoderHandle(videoUrl, onSamples)
+      if (!res) {
+        setStatus(StatusEnum.FAIL)
+        return
+      }
+      const { config } = res
+      const file = await encoderHandle(videoSamples, audioSamples, config)
+      file && setNewVideoUrl(URL.createObjectURL(file))
+      setStatus(StatusEnum.SUCCESS)
+    } catch (e) {
+      console.error('视频处理失败：', e)
       setStatus(StatusEnum.FAIL)
-      return
     }
-    const { config } = res
-    const file = await encoderHandle(videoSamples, audioSamples, config)
-    file && setNewVideoUrl(URL.createObjectURL(file))
   }
 
   const onChangeColor = (e: ChangeEvent<HTMLInputElement>) => {
