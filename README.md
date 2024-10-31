@@ -1,1 +1,0 @@
-# web-codecs-demo
