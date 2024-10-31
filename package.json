@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://qiangqiang-id.github.io/web-codecs-demo",
   "scripts": {
     "commit": "git-cz",
     "dev": "vite",
