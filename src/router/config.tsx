@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createHashRouter } from 'react-router-dom'
 import Routes from '@/config/Routes'
 import Layout from '@/layout'
 import SupportedCodec from '@/pages/SupportedCodec'
@@ -52,4 +52,4 @@ const routerData = [
   },
 ]
 
-export default createBrowserRouter(routerData)
+export default createHashRouter(routerData)
