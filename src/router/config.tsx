@@ -8,6 +8,7 @@ import GifToVideo from '@/pages/GifToVideo'
 import ClipVideo from '@/pages/ClipVideo'
 import VideoWatermark from '@/pages/VideoWatermark'
 import ChromaKey from '@/pages/ChromaKey'
+import CheckMediaInfo from '@/pages/CheckMediaInfo'
 
 const routerData = [
   {
@@ -47,6 +48,11 @@ const routerData = [
       {
         ...Routes.ChromaKey,
         element: <ChromaKey />,
+      },
+
+      {
+        ...Routes.CheckMediaInfo,
+        element: <CheckMediaInfo />,
       },
     ],
   },

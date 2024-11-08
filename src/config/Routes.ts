@@ -40,6 +40,12 @@ const Routes = {
     path: '/chroma-key',
     label: '视频抠像',
   },
+
+  CheckMediaInfo: {
+    key: 'CheckMediaInfo',
+    path: '/check-media-info',
+    label: '获取媒体信息',
+  },
 } as const
 
 export default Routes
